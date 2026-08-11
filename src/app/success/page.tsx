@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function SuccessPage() { return <main className="success-page"><div className="success-mark">✓</div><p className="eyebrow">Order confirmed</p><h1>Your look is<br/><em>officially hot.</em></h1><p>Thanks for shopping the social edit. Stripe has securely received your payment.</p><Link className="primary-button" href="/#shop">Keep exploring <span>↘</span></Link></main>; }
