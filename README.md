@@ -8,7 +8,18 @@ A social-proof fashion marketplace MVP built with Next.js, TypeScript, and Strip
 - Filter by category.
 - See cumulative likes, creator-post counts, and social heat per product.
 - Open a product to inspect attributed post snapshots and select a size.
+- Like or dislike each item with one active vote per browser and changeable vote direction.
 - Purchase through hosted Stripe Checkout when `STRIPE_SECRET_KEY` is configured.
+
+## Community voting and rate limits
+
+`/api/votes` issues an HTTP-only, HMAC-signed voter cookie and enforces three server-side limits:
+
+- one active vote per browser per product;
+- a three-second cooldown before changing the same product vote;
+- 30 vote requests per browser per minute and a 120-request IP safety ceiling.
+
+The included in-memory store makes the deployed MVP interactive but is not a durable global counter across Vercel function instances or cold starts. Before treating totals as production data, connect a shared Redis-compatible store such as Upstash/Vercel Marketplace and perform vote mutation plus rate-limit checks atomically there.
 
 ## Run locally
 
@@ -16,6 +27,15 @@ A social-proof fashion marketplace MVP built with Next.js, TypeScript, and Strip
 npm install
 cp .env.example .env.local
 npm run dev
+```
+
+Quality checks:
+
+```bash
+npm test
+npm run lint
+npm run build
+npm run test:e2e
 ```
 
 The catalog works without secrets. Checkout intentionally returns a configuration message until a Stripe key is provided.
@@ -51,3 +71,4 @@ Environment variables required for payment:
 
 - `STRIPE_SECRET_KEY`
 - `NEXT_PUBLIC_SITE_URL`
+- `VOTE_COOKIE_SECRET` (a long random value for signing anonymous voter identities)

@@ -1,14 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { heatScore, products, socialLikes, type Product } from "@/lib/products";
 
 const categories = ["All", "Jackets", "Dresses", "Tops", "Accessories"] as const;
 const compact = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
+type CommunityVote = { likes: number; dislikes: number; vote: "like" | "dislike" | null };
 
 function Flame({ small = false }: { small?: boolean }) {
   return <span className={small ? "flame small" : "flame"} aria-hidden>◆</span>;
+}
+
+function VoteButtons({ product, current, busy, modal = false, onVote }: { product: Product; current: CommunityVote; busy: boolean; modal?: boolean; onVote: (productId: string, vote: "like" | "dislike") => void }) {
+  return <div className={`vote-controls ${modal ? "modal-votes" : ""}`} aria-label={`Community votes for ${product.name}`}>
+    <button className={current.vote === "like" ? "selected" : ""} disabled={busy} onClick={() => onVote(product.id, "like")} aria-pressed={current.vote === "like"} aria-label={`Like ${product.name}`}><span aria-hidden>♥</span><b>{current.likes}</b></button>
+    <button className={current.vote === "dislike" ? "selected dislike" : "dislike"} disabled={busy} onClick={() => onVote(product.id, "dislike")} aria-pressed={current.vote === "dislike"} aria-label={`Dislike ${product.name}`}><span aria-hidden>×</span><b>{current.dislikes}</b></button>
+  </div>;
 }
 
 export default function Storefront() {
@@ -16,9 +24,30 @@ export default function Storefront() {
   const [selected, setSelected] = useState<Product | null>(null);
   const [size, setSize] = useState("");
   const [notice, setNotice] = useState("");
+  const [voteNotice, setVoteNotice] = useState("");
+  const [votes, setVotes] = useState<Record<string, CommunityVote>>({});
+  const [voting, setVoting] = useState("");
   const [loading, setLoading] = useState(false);
   const filtered = useMemo(() => category === "All" ? products : products.filter((p) => p.category === category), [category]);
   const totalLikes = products.reduce((sum, product) => sum + socialLikes(product), 0);
+
+  useEffect(() => {
+    fetch("/api/votes").then((response) => response.json()).then((data) => setVotes(data.votes ?? {})).catch(() => setVoteNotice("Community voting is temporarily unavailable."));
+  }, []);
+
+  async function castVote(productId: string, vote: "like" | "dislike") {
+    setVoting(productId);
+    setVoteNotice("");
+    try {
+      const response = await fetch("/api/votes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId, vote }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Your vote could not be saved.");
+      setVotes((current) => ({ ...current, [productId]: { likes: data.likes, dislikes: data.dislikes, vote: data.vote } }));
+    } catch (error) {
+      setVoteNotice(error instanceof Error ? error.message : "Your vote could not be saved.");
+    } finally { setVoting(""); }
+  }
+
 
   function openProduct(product: Product) {
     setSelected(product);
@@ -79,8 +108,9 @@ export default function Storefront() {
             <span className="view-pill">View piece ↗</span>
           </button>
           <div className="product-meta"><div><span>{product.brand}</span><button onClick={() => openProduct(product)}>{product.name}</button></div><strong>${product.price}</strong></div>
-          <div className="social-proof"><span className="face-stack">{product.socialPosts.slice(0,3).map((post) => <i key={post.handle}>{post.creator.split(" ").map(x => x[0]).join("")}</i>)}</span><span><b>{compact.format(socialLikes(product))}</b> likes across {product.socialPosts.length} posts</span></div>
+          <div className="card-footer"><div className="social-proof"><span className="face-stack">{product.socialPosts.slice(0,3).map((post) => <i key={post.handle}>{post.creator.split(" ").map(x => x[0]).join("")}</i>)}</span><span><b>{compact.format(socialLikes(product))}</b> likes across {product.socialPosts.length} posts</span></div><VoteButtons product={product} current={votes[product.id] ?? { likes: 0, dislikes: 0, vote: null }} busy={voting === product.id} onVote={castVote} /></div>
         </article>)}</div>
+        {voteNotice && <p className="vote-notice" role="status">{voteNotice}</p>}
       </section>
 
       <section className="proof-section" id="how"><div><p className="eyebrow light">Why Wornly</p><h2>Popularity,<br/><em>with proof.</em></h2></div><div className="steps"><article><span>01</span><h3>We spot the signal</h3><p>Creator-approved posts connect social moments to the exact pieces being worn.</p></article><article><span>02</span><h3>We measure the heat</h3><p>Visible engagement rolls into one simple score, so momentum is easy to compare.</p></article><article><span>03</span><h3>You shop the story</h3><p>See who wore it, why it resonated, and buy the piece without losing the context.</p></article></div></section>
@@ -93,6 +123,8 @@ export default function Storefront() {
       <div className="modal-image"><Image src={selected.image} alt={selected.imageAlt} fill sizes="(max-width: 800px) 100vw, 45vw" /></div>
       <div className="modal-content"><p className="eyebrow">{selected.brand}</p><h2 id="product-title">{selected.name}</h2><div className="modal-price"><strong>${selected.price}</strong><span><Flame small /> {heatScore(selected)} social heat</span></div><p>{selected.description}</p>
         <div className="receipt"><div><strong>{compact.format(socialLikes(selected))}</strong><span>combined likes</span></div><div><strong>{selected.socialPosts.length}</strong><span>creator posts</span></div></div>
+        <div className="modal-community"><span>Rate this piece</span><VoteButtons product={selected} current={votes[selected.id] ?? { likes: 0, dislikes: 0, vote: null }} busy={voting === selected.id} modal onVote={castVote} /></div>
+        {voteNotice && <p className="notice" role="status">{voteNotice}</p>}
         <h3>Seen in the wild</h3><div className="post-list">{selected.socialPosts.map((post) => <article key={post.handle}><div className="avatar">{post.creator.split(" ").map(x => x[0]).join("")}</div><div><strong>{post.handle}</strong><p>“{post.caption}”</p><span>{post.platform} · {compact.format(post.likes)} likes</span></div></article>)}</div>
         <label className="size-label">Choose size <select value={size} onChange={(e) => setSize(e.target.value)}>{selected.sizes.map((item) => <option key={item}>{item}</option>)}</select></label>
         <button className="checkout" onClick={checkout} disabled={loading}>{loading ? "Opening checkout…" : `Buy now · $${selected.price}`}</button>

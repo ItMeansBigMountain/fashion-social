@@ -77,6 +77,16 @@ em { font-family:var(--font-serif),serif; font-weight:400; color:var(--red); }
 .product-meta>strong { font-size:15px; }
 .social-proof { display:flex; align-items:center; gap:8px; font-size:10px; color:var(--muted); }
 .social-proof b { color:var(--ink); }
+.card-footer { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:46px; }
+.vote-controls { display:flex; gap:6px; flex:0 0 auto; }
+.vote-controls button { min-width:48px; min-height:44px; border:1px solid var(--line); border-radius:999px; background:var(--paper); color:var(--muted); display:flex; align-items:center; justify-content:center; gap:5px; cursor:pointer; transition:.18s ease; }
+.vote-controls button span { font-size:15px; line-height:1; }
+.vote-controls button b { font-size:10px; }
+.vote-controls button:hover { border-color:var(--ink); color:var(--ink); transform:translateY(-1px); }
+.vote-controls button.selected { background:var(--red); border-color:var(--red); color:white; }
+.vote-controls button.selected.dislike { background:var(--ink); border-color:var(--ink); }
+.vote-controls button:disabled { opacity:.55; cursor:wait; transform:none; }
+.vote-notice { width:min(520px,100%); margin:28px auto 0; padding:12px 16px; border-radius:8px; background:#fff0df; color:#7e4218; font-size:12px; text-align:center; }
 .face-stack { display:flex; padding-left:5px; }
 .face-stack i { width:23px; height:23px; margin-left:-5px; display:grid; place-items:center; border:2px solid var(--paper); border-radius:50%; background:#d9c9b8; font-size:7px; color:var(--ink); font-style:normal; font-weight:800; }
 .face-stack i:nth-child(2) { background:#b7c9be; }.face-stack i:nth-child(3) { background:#d8b5a9; }
@@ -103,6 +113,9 @@ footer p,footer>span { color:#89817b; font-size:11px; }
 .receipt { display:flex; margin:23px 0; border:1px solid var(--line); border-radius:8px; }
 .receipt div { flex:1; display:flex; flex-direction:column; padding:14px; }.receipt div+div { border-left:1px solid var(--line); }
 .receipt strong { font-size:20px; }.receipt span { color:var(--muted); font-size:9px; text-transform:uppercase; letter-spacing:1px; }
+.modal-community { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:18px 0; padding:11px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.modal-community>span { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1.3px; }
+.modal-votes button { min-width:58px; }
 .modal-content h3 { text-transform:uppercase; letter-spacing:1.5px; font-size:10px; margin:22px 0 12px; }
 .post-list { display:flex; flex-direction:column; gap:8px; }
 .post-list article { background:var(--cream); padding:11px; border-radius:8px; display:flex; gap:10px; }
