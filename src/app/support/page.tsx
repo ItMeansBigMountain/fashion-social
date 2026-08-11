@@ -1,0 +1,1 @@
+import LegalPage from"@/components/legal-page";import SupportForm from"./support-form";export default function Page(){return <LegalPage title="Support"><p>Send an order, shipping, return, product, privacy, or media-rights request. Do not include card numbers, passwords, or other sensitive credentials.</p><SupportForm/></LegalPage>}

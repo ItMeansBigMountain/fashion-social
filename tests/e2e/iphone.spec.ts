@@ -31,6 +31,6 @@ for (const viewport of viewports) {
     await page.getByRole("button", { name: "View After Dark Blazer" }).click();
     await expect(page.getByRole("dialog", { name: "After Dark Blazer" })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
-    await expect(page.getByRole("button", { name: /Buy now/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Add to cart/ })).toBeVisible();
   });
 }

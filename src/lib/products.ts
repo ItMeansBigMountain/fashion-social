@@ -10,7 +10,7 @@ export type Product = {
   id: string;
   name: string;
   brand: string;
-  category: "Jackets" | "Dresses" | "Tops" | "Accessories";
+  category: string;
   price: number;
   image: string;
   imageAlt: string;
@@ -19,6 +19,10 @@ export type Product = {
   color: string;
   socialPosts: SocialPost[];
   featured?: boolean;
+  variantIds?: Record<string, string>;
+  sellerType?: "first_party" | "creator";
+  creatorHandle?: string;
+  fulfillmentModel?: "stocked" | "creator_dropship";
 };
 
 export const products: Product[] = [

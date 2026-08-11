@@ -1,0 +1,1 @@
+import{NextResponse}from"next/server";import{listPublicSocialEvidenceDb}from"@/lib/admin-store";export const revalidate=300;export async function GET(){return NextResponse.json({evidence:await listPublicSocialEvidenceDb()});}
